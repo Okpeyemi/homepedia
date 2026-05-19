@@ -435,6 +435,41 @@ export const communes: Commune[] = [
   },
 ];
 
+const photosApartment = [
+  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1551361415-69c87624334f?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1486304873000-235643847519?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=1200&q=80&auto=format&fit=crop",
+];
+
+const photosHouse = [
+  "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1576941089067-2de3c901e126?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1502672023488-70e25813eb80?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=1200&q=80&auto=format&fit=crop",
+];
+
+const photosInterior = [
+  "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1556909114-44e3e70034e2?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=1200&q=80&auto=format&fit=crop",
+];
+
 const titres = [
   "Lumineux 3 pièces refait à neuf",
   "Studio cosy proche métro",
@@ -496,6 +531,14 @@ export const annonces: Annonce[] = (() => {
       date.setDate(date.getDate() - daysAgo);
       const [lon, lat] = commune.centre;
       const jitter = 0.012;
+      const cover = isMaison
+        ? photosHouse[Math.floor(rng() * photosHouse.length)]
+        : photosApartment[Math.floor(rng() * photosApartment.length)];
+      const gallery: string[] = [cover];
+      for (let g = 0; g < 3; g++) {
+        gallery.push(photosInterior[Math.floor(rng() * photosInterior.length)]);
+      }
+
       out.push({
         id: `${commune.id}-${i.toString().padStart(3, "0")}`,
         communeId: commune.id,
@@ -512,6 +555,7 @@ export const annonces: Annonce[] = (() => {
         position: [lon + (rng() - 0.5) * jitter * 2, lat + (rng() - 0.5) * jitter],
         description:
           "Bien rare proposé à la vente dans un quartier recherché. Volumes généreux, prestations soignées, exposition agréable. Idéal résidence principale ou investissement locatif.",
+        photos: gallery,
       });
     }
   }

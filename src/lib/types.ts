@@ -72,6 +72,7 @@ export type Annonce = {
   adresse: string;
   position: [number, number]; // [lon, lat]
   description: string;
+  photos: string[];
 };
 
 export type SeriePrix = {

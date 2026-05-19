@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -87,6 +88,33 @@ export default async function AnnonceDetailPage({
               </div>
             </div>
           </header>
+
+          <section className="mt-6 grid gap-2 sm:grid-cols-[2fr_1fr_1fr] sm:grid-rows-2 sm:h-[420px]">
+            <div className="relative overflow-hidden rounded-2xl bg-muted sm:row-span-2">
+              <Image
+                src={annonce.photos[0]}
+                alt={annonce.titre}
+                fill
+                priority
+                sizes="(min-width: 1024px) 700px, 100vw"
+                className="object-cover"
+              />
+            </div>
+            {annonce.photos.slice(1, 5).map((src, i) => (
+              <div
+                key={i}
+                className="relative aspect-square overflow-hidden rounded-2xl bg-muted sm:aspect-auto"
+              >
+                <Image
+                  src={src}
+                  alt={`${annonce.titre} – photo ${i + 2}`}
+                  fill
+                  sizes="(min-width: 1024px) 300px, 50vw"
+                  className="object-cover"
+                />
+              </div>
+            ))}
+          </section>
 
           <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <Kpi label="Prix" value={formatEUR(annonce.prix)} icon={Money01Icon} />

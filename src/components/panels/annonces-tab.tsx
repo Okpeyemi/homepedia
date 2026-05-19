@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
@@ -112,11 +113,22 @@ export function AnnoncesTab({ commune }: { commune: Commune }) {
             className="group block rounded-xl border border-border bg-card p-3 transition-colors hover:border-primary/40 hover:bg-accent/30"
           >
             <div className="flex items-start gap-3">
-              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                <HugeiconsIcon
-                  icon={a.type === "appartement" ? Building03Icon : House01Icon}
-                  size={20}
+              <div className="relative h-20 w-28 shrink-0 overflow-hidden rounded-lg bg-muted">
+                <Image
+                  src={a.photos[0]}
+                  alt={a.titre}
+                  fill
+                  sizes="112px"
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
+                <div className="absolute left-1 top-1 rounded-md bg-background/90 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider backdrop-blur">
+                  <HugeiconsIcon
+                    icon={a.type === "appartement" ? Building03Icon : House01Icon}
+                    size={11}
+                    className="-mt-0.5 mr-0.5 inline"
+                  />
+                  {a.type === "appartement" ? "Appart." : "Maison"}
+                </div>
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-3">
