@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Syne, Geist_Mono } from "next/font/google";
+import { Sen, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-const syne = Syne({
-  variable: "--font-syne",
+const sen = Sen({
+  variable: "--font-sen",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   display: "swap",
@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${syne.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${sen.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="h-full overflow-hidden flex flex-col bg-background">
         <TooltipProvider delay={120}>{children}</TooltipProvider>
