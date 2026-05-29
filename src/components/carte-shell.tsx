@@ -31,6 +31,8 @@ import {
   ToggleGroupItem,
 } from "@/components/ui/toggle-group";
 import { MapLegend } from "@/components/map/map-legend";
+import { SourceBadge } from "@/components/common/source-badge";
+import { api, numericIndicator } from "@/lib/api";
 import { ApercuTab } from "@/components/panels/apercu-tab";
 import { AnnoncesTab } from "@/components/panels/annonces-tab";
 import { StatistiquesTab } from "@/components/panels/statistiques-tab";
@@ -50,12 +52,41 @@ const CityMap = dynamic(() => import("@/components/map/city-map").then((m) => m.
 
 type Density = "choroplèthe" | "heatmap" | "annonces";
 
+type ApiStatus = "loading" | "api" | "mock";
+
 export function CarteShell() {
   const params = useSearchParams();
   const [active, setActive] = useState<ActiveLocation>(() => fromMockCommune(communes[0]));
   const [density, setDensity] = useState<Density>("choroplèthe");
   const [dark, setDark] = useState(false);
   const [panelOpen, setPanelOpen] = useState(true);
+  const [communeApi, setCommuneApi] = useState<Record<string, ApiStatus>>(() =>
+    Object.fromEntries(communes.map((c) => [c.insee, "loading" as ApiStatus])),
+  );
+
+  useEffect(() => {
+    const ctrl = new AbortController();
+    async function probe(insee: string, attempt = 0): Promise<void> {
+      try {
+        const r = await api.getIndicators(
+          insee,
+          { keys: "price.median.apartment" },
+          ctrl.signal,
+        );
+        const v = numericIndicator(r, "price.median.apartment");
+        setCommuneApi((s) => ({ ...s, [insee]: v != null ? "api" : "mock" }));
+      } catch {
+        if (ctrl.signal.aborted) return;
+        if (attempt < 2) {
+          setTimeout(() => {
+            if (!ctrl.signal.aborted) probe(insee, attempt + 1);
+          }, 3000 + attempt * 4000);
+        }
+      }
+    }
+    communes.forEach((c) => probe(c.insee));
+    return () => ctrl.abort();
+  }, []);
 
   useEffect(() => {
     const loc = params.get("loc");
@@ -131,11 +162,22 @@ export function CarteShell() {
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {communes.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.nom} <span className="text-muted-foreground">· {c.codePostal}</span>
-                  </SelectItem>
-                ))}
+                {communes.map((c) => {
+                  const status = communeApi[c.insee] ?? "loading";
+                  return (
+                    <SelectItem key={c.id} value={c.id}>
+                      <span className="flex w-full items-center gap-2">
+                        <span className="truncate">
+                          {c.nom}{" "}
+                          <span className="text-muted-foreground">· {c.codePostal}</span>
+                        </span>
+                        {status !== "loading" && (
+                          <SourceBadge source={status} className="ml-auto" />
+                        )}
+                      </span>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>

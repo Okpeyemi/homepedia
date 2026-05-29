@@ -20,14 +20,14 @@ export async function GET(
   try {
     const r = await fetch(target.toString(), {
       headers: { Accept: "application/json" },
-      next: { revalidate: 120 },
+      cache: "no-store",
     });
     const ct = r.headers.get("Content-Type") ?? "";
     const body = await r.text();
-    if (!ct.includes("application/json")) {
+    if (!r.ok || !ct.includes("application/json")) {
       return Response.json(
         {
-          error: "Upstream returned non-JSON",
+          error: "Upstream error",
           status: r.status,
           upstream_content_type: ct,
         },
@@ -36,7 +36,10 @@ export async function GET(
     }
     return new Response(body, {
       status: r.status,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=120, stale-while-revalidate=600",
+      },
     });
   } catch (e) {
     return Response.json(
