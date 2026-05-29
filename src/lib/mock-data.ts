@@ -10,6 +10,7 @@ import type {
 export const communes: Commune[] = [
   {
     id: "paris-11",
+    insee: "75056",
     nom: "Paris 11e",
     codePostal: "75011",
     departement: "Paris",
@@ -65,6 +66,7 @@ export const communes: Commune[] = [
   },
   {
     id: "lyon-6",
+    insee: "69123",
     nom: "Lyon 6e",
     codePostal: "69006",
     departement: "Rhône",
@@ -119,6 +121,7 @@ export const communes: Commune[] = [
   },
   {
     id: "marseille-8",
+    insee: "13055",
     nom: "Marseille 8e",
     codePostal: "13008",
     departement: "Bouches-du-Rhône",
@@ -173,6 +176,7 @@ export const communes: Commune[] = [
   },
   {
     id: "bordeaux-centre",
+    insee: "33063",
     nom: "Bordeaux Centre",
     codePostal: "33000",
     departement: "Gironde",
@@ -226,6 +230,7 @@ export const communes: Commune[] = [
   },
   {
     id: "nantes-centre",
+    insee: "44109",
     nom: "Nantes Centre",
     codePostal: "44000",
     departement: "Loire-Atlantique",
@@ -279,6 +284,7 @@ export const communes: Commune[] = [
   },
   {
     id: "lille-vieux",
+    insee: "59350",
     nom: "Lille Vieux-Lille",
     codePostal: "59800",
     departement: "Nord",
@@ -331,6 +337,7 @@ export const communes: Commune[] = [
   },
   {
     id: "toulouse-capitole",
+    insee: "31555",
     nom: "Toulouse Capitole",
     codePostal: "31000",
     departement: "Haute-Garonne",
@@ -383,6 +390,7 @@ export const communes: Commune[] = [
   },
   {
     id: "nice-promenade",
+    insee: "06088",
     nom: "Nice Promenade",
     codePostal: "06000",
     departement: "Alpes-Maritimes",
@@ -564,6 +572,10 @@ export const annonces: Annonce[] = (() => {
 
 export function getCommune(id: string): Commune | undefined {
   return communes.find((c) => c.id === id);
+}
+
+export function getCommuneByInsee(insee: string): Commune | undefined {
+  return communes.find((c) => c.insee === insee);
 }
 
 export function getAnnoncesByCommune(communeId: string): Annonce[] {

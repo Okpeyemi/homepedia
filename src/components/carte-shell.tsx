@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   EyeIcon,
@@ -14,7 +15,9 @@ import {
   Location04Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { communes } from "@/lib/mock-data";
+import { communes, getCommuneByInsee } from "@/lib/mock-data";
+import { fromMockCommune, type ActiveLocation } from "@/lib/location";
+import type { AdminLevel } from "@/lib/api";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Select,
@@ -48,10 +51,27 @@ const CityMap = dynamic(() => import("@/components/map/city-map").then((m) => m.
 type Density = "choroplèthe" | "heatmap" | "annonces";
 
 export function CarteShell() {
-  const [communeId, setCommuneId] = useState(communes[0].id);
+  const params = useSearchParams();
+  const [active, setActive] = useState<ActiveLocation>(() => fromMockCommune(communes[0]));
   const [density, setDensity] = useState<Density>("choroplèthe");
   const [dark, setDark] = useState(false);
   const [panelOpen, setPanelOpen] = useState(true);
+
+  useEffect(() => {
+    const loc = params.get("loc");
+    if (!loc) return;
+    const mock = getCommuneByInsee(loc);
+    if (mock) {
+      setActive(fromMockCommune(mock));
+      return;
+    }
+    setActive({
+      insee: loc,
+      label: params.get("label") ?? loc,
+      level: (params.get("level") as AdminLevel | null) ?? "commune",
+      parentLabel: params.get("parent") ?? undefined,
+    });
+  }, [params]);
 
   useEffect(() => {
     const update = () =>
@@ -62,36 +82,51 @@ export function CarteShell() {
     return () => obs.disconnect();
   }, []);
 
-  const selected = useMemo(
-    () => communes.find((c) => c.id === communeId) ?? communes[0],
-    [communeId],
-  );
+  const mockSelectValue = active.mock?.id ?? "";
 
-  const onSelect = useCallback((id: string) => {
-    setCommuneId(id);
+  const onMockSelect = useCallback((id: string) => {
+    const c = communes.find((x) => x.id === id);
+    if (c) setActive(fromMockCommune(c));
     setPanelOpen(true);
   }, []);
+
+  const onMapSelect = useCallback((id: string) => {
+    onMockSelect(id);
+  }, [onMockSelect]);
+
+  const headerHint = useMemo(() => {
+    if (active.mock) {
+      return `${active.mock.codePostal} · ${active.mock.departement}`;
+    }
+    return active.parentLabel ?? "Donnée API";
+  }, [active]);
 
   return (
     <div className="relative flex flex-1 min-h-0 overflow-hidden">
       <div className="relative flex-1">
-        <CityMap selectedId={communeId} onSelect={onSelect} density={density} dark={dark} />
+        <CityMap
+          selectedId={active.mock?.id ?? communes[0].id}
+          onSelect={onMapSelect}
+          density={density}
+          dark={dark}
+        />
 
         <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-3 p-3 sm:p-4">
           <div className="pointer-events-auto flex items-center gap-2 rounded-xl border border-border bg-card/90 px-2 py-1.5 shadow-sm backdrop-blur">
             <HugeiconsIcon icon={Location04Icon} size={16} className="ml-1 text-primary" />
             <Select
-              value={communeId}
-              onValueChange={(v) => v && setCommuneId(v)}
+              value={mockSelectValue}
+              onValueChange={(v) => v && onMockSelect(v)}
             >
               <SelectTrigger
                 size="sm"
-                className="border-0 bg-transparent shadow-none focus-visible:ring-0 min-w-[200px]"
+                className="border-0 bg-transparent shadow-none focus-visible:ring-0 min-w-[220px]"
               >
-                <SelectValue>
+                <SelectValue placeholder="Choisir une commune">
                   {(v: string | null) => {
                     const c = communes.find((x) => x.id === v);
-                    return c ? `${c.nom} · ${c.codePostal}` : "Choisir une commune";
+                    if (c) return `${c.nom} · ${c.codePostal}`;
+                    return active.label;
                   }}
                 </SelectValue>
               </SelectTrigger>
@@ -132,9 +167,11 @@ export function CarteShell() {
         <div className="pointer-events-none absolute bottom-3 left-3 z-10 flex flex-col items-start gap-2 sm:bottom-4 sm:left-4">
           <MapLegend density={density} />
           <div className="pointer-events-auto rounded-xl border border-border bg-card/90 px-3 py-2 text-xs shadow-sm backdrop-blur">
-            <div className="font-semibold">{selected.nom}</div>
+            <div className="font-semibold">{active.label}</div>
             <div className="mt-0.5 text-muted-foreground">
-              {selected.codePostal} · {formatNumber(selected.population)} hab.
+              {active.mock
+                ? `${active.mock.codePostal} · ${formatNumber(active.mock.population)} hab.`
+                : `INSEE ${active.insee}`}
             </div>
           </div>
         </div>
@@ -156,11 +193,11 @@ export function CarteShell() {
         className="z-20 flex w-full max-w-[600px] shrink-0 flex-col border-l border-border bg-background transition-[width,opacity] duration-300 data-[open=false]:w-0 data-[open=false]:opacity-0 data-[open=true]:opacity-100 lg:w-[520px] xl:w-[560px] 2xl:w-[600px]"
       >
         <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-          <div>
-            <div className="text-sm font-semibold leading-tight">{selected.nom}</div>
-            <div className="text-xs text-muted-foreground">
-              {selected.codePostal} · {selected.departement}
+          <div className="min-w-0">
+            <div className="truncate text-sm font-semibold leading-tight">
+              {active.label}
             </div>
+            <div className="truncate text-xs text-muted-foreground">{headerHint}</div>
           </div>
           <Button
             variant="ghost"
@@ -198,16 +235,16 @@ export function CarteShell() {
           <ScrollArea className="min-h-0 flex-1 overflow-hidden">
             <div className="px-4 pb-6">
               <TabsContent value="apercu" className="mt-0">
-                <ApercuTab commune={selected} />
+                <ApercuTab location={active} />
               </TabsContent>
               <TabsContent value="annonces" className="mt-0">
-                <AnnoncesTab commune={selected} />
+                <AnnoncesTab location={active} />
               </TabsContent>
               <TabsContent value="stats" className="mt-0">
-                <StatistiquesTab commune={selected} />
+                <StatistiquesTab location={active} />
               </TabsContent>
               <TabsContent value="quartier" className="mt-0">
-                <QuartierTab commune={selected} />
+                <QuartierTab location={active} />
               </TabsContent>
             </div>
           </ScrollArea>

@@ -11,7 +11,8 @@ const eurCompact = new Intl.NumberFormat("fr-FR", {
   maximumFractionDigits: 1,
 });
 
-const num = new Intl.NumberFormat("fr-FR");
+const num = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
+const numShort = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 });
 
 export const formatEUR = (v: number) => eur.format(v);
 export const formatEURCompact = (v: number) => eurCompact.format(v);
@@ -21,7 +22,7 @@ export const formatPct = (v: number, fractionDigits = 1) => {
   return v > 0 ? `+${s}%` : `${s}%`;
 };
 export const formatM2 = (v: number) => `${num.format(v)} €/m²`;
-export const formatSurface = (v: number) => `${num.format(v)} m²`;
+export const formatSurface = (v: number) => `${numShort.format(v)} m²`;
 
 export const dpeColors: Record<"A" | "B" | "C" | "D" | "E" | "F" | "G", string> = {
   A: "#00a651",

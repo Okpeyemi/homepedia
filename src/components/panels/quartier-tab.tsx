@@ -12,16 +12,30 @@ import {
   Comment01Icon,
   TickDouble01Icon,
   Cancel01Icon,
+  Tree01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScorePill } from "@/components/common/score-pill";
 import { Kpi } from "@/components/common/kpi";
-import type { Commune } from "@/lib/types";
-import { formatEUR, formatNumber, formatPct } from "@/lib/format";
+import { formatEUR, formatNumber } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
+import type { ActiveLocation } from "@/lib/location";
+import { EmptyState } from "@/components/common/empty-state";
 
-export function QuartierTab({ commune }: { commune: Commune }) {
+export function QuartierTab({ location }: { location: ActiveLocation }) {
+  const commune = location.mock;
+  if (!commune) {
+    return (
+      <div className="py-4">
+        <EmptyState
+          title="Quartier non disponible pour cette zone"
+          description="Les indicateurs qualité de vie, démographie INSEE et avis ne sont pas encore exposés par l'API pour cette localisation."
+          icon={Tree01Icon}
+        />
+      </div>
+    );
+  }
   return (
     <div className="space-y-4 py-2">
       <section>

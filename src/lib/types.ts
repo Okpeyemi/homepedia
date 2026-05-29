@@ -3,6 +3,7 @@ export type BienType = "appartement" | "maison";
 
 export type Commune = {
   id: string;
+  insee: string;
   nom: string;
   codePostal: string;
   departement: string;
