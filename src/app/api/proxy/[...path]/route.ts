@@ -22,12 +22,21 @@ export async function GET(
       headers: { Accept: "application/json" },
       next: { revalidate: 120 },
     });
+    const ct = r.headers.get("Content-Type") ?? "";
     const body = await r.text();
+    if (!ct.includes("application/json")) {
+      return Response.json(
+        {
+          error: "Upstream returned non-JSON",
+          status: r.status,
+          upstream_content_type: ct,
+        },
+        { status: r.ok ? 502 : r.status },
+      );
+    }
     return new Response(body, {
       status: r.status,
-      headers: {
-        "Content-Type": r.headers.get("Content-Type") ?? "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (e) {
     return Response.json(
