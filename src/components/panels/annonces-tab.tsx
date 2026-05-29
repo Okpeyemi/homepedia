@@ -38,6 +38,7 @@ import {
 } from "@/lib/api";
 import { useAsync } from "@/lib/use-api";
 import { EmptyState } from "@/components/common/empty-state";
+import { SourceBadge, type DataSource } from "@/components/common/source-badge";
 import type { DpeClass } from "@/lib/types";
 
 type LocalSort = "recent" | "prix-asc" | "prix-desc" | "m2-asc" | "m2-desc";
@@ -94,6 +95,11 @@ export function AnnoncesTab({ location }: { location: ActiveLocation }) {
 
   const usingApi = apiHasResults;
   const showMock = !usingApi && mockFiltered.length > 0;
+  const statSource: DataSource | null = usingApi
+    ? "api"
+    : showMock
+      ? "mock"
+      : null;
 
   return (
     <div className="flex h-full flex-col">
@@ -101,7 +107,7 @@ export function AnnoncesTab({ location }: { location: ActiveLocation }) {
         <div className="grid grid-cols-3 gap-2 rounded-xl bg-muted/50 p-3 text-sm">
           {usingApi ? (
             <>
-              <Stat label="Annonces" value={formatNumber(apiMeta?.count ?? 0)} />
+              <Stat label="Annonces" value={formatNumber(apiMeta?.count ?? 0)} source={statSource} />
               <Stat
                 label="Prix médian"
                 value={
@@ -109,6 +115,7 @@ export function AnnoncesTab({ location }: { location: ActiveLocation }) {
                     ? formatEUR(apiMeta.median_price.value)
                     : "—"
                 }
+                source={statSource}
               />
               <Stat
                 label="Surface médiane"
@@ -117,6 +124,7 @@ export function AnnoncesTab({ location }: { location: ActiveLocation }) {
                     ? formatSurface(apiMeta.median_surface.value)
                     : "—"
                 }
+                source={statSource}
               />
             </>
           ) : (
@@ -124,18 +132,18 @@ export function AnnoncesTab({ location }: { location: ActiveLocation }) {
               <Stat
                 label="Annonces"
                 value={formatNumber(mockFiltered.length)}
-                hint={showMock ? "Démo" : undefined}
+                source={statSource}
               />
               <Stat
                 label="Prix médian"
                 value={medianBy(mockFiltered.map((a) => a.prix))}
-                hint={showMock ? "Démo" : undefined}
+                source={statSource}
                 fmt={formatEUR}
               />
               <Stat
                 label="Surface médiane"
                 value={medianBy(mockFiltered.map((a) => a.surface))}
-                hint={showMock ? "Démo" : undefined}
+                source={statSource}
                 fmt={formatSurface}
               />
             </>
@@ -253,6 +261,9 @@ function ApiListingRow({ item, parent }: { item: ListingItem; parent: string }) 
               <span className="ml-1 text-primary">Loc.</span>
             )}
           </div>
+          <span className="absolute right-1 top-1">
+            <SourceBadge source="api" />
+          </span>
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
@@ -340,8 +351,10 @@ function MockListingRow(props: {
               className="-mt-0.5 mr-0.5 inline"
             />
             {props.propertyType === "apartment" ? "Appart." : "Maison"}
-            <span className="ml-1 text-muted-foreground">Démo</span>
           </div>
+          <span className="absolute right-1 top-1">
+            <SourceBadge source="mock" />
+          </span>
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
@@ -403,21 +416,21 @@ function labelType(t: PropertyType) {
 function Stat({
   label,
   value,
-  hint,
+  source,
   fmt,
 }: {
   label: string;
   value: string | number;
-  hint?: string;
+  source?: DataSource | null;
   fmt?: (v: number) => string;
 }) {
   const display =
     typeof value === "number" ? (fmt ? fmt(value) : formatNumber(value)) : value;
   return (
     <div>
-      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground">
-        {label}
-        {hint && <span className="text-muted-foreground/70">· {hint}</span>}
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+        <span className="truncate">{label}</span>
+        {source && <SourceBadge source={source} />}
       </div>
       <div className="mt-0.5 text-base font-semibold tabular-nums">{display}</div>
     </div>

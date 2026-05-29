@@ -28,6 +28,7 @@ import type { ActiveLocation } from "@/lib/location";
 import { api, findIndicator, numericIndicator, rangeIndicator } from "@/lib/api";
 import { useAsync } from "@/lib/use-api";
 import { EmptyState } from "@/components/common/empty-state";
+import { SourceBadge, type DataSource } from "@/components/common/source-badge";
 
 const DPE_ORDER: DpeClass[] = ["A", "B", "C", "D", "E", "F", "G"];
 
@@ -57,36 +58,66 @@ export function ApercuTab({ location }: { location: ActiveLocation }) {
       ? (splitInd.value as { apartment: number; house: number })
       : null;
 
-  const aptValue = apt ?? commune?.prixMedianM2.appartement ?? null;
-  const houseValue = house ?? commune?.prixMedianM2.maison ?? null;
-  const meanValue = mean ?? commune?.prixMoyenM2 ?? null;
-  const rangeMin = range?.[0] ?? commune?.prixMinM2 ?? null;
-  const rangeMax = range?.[1] ?? commune?.prixMaxM2 ?? null;
-  const evo5yValue =
-    evo5y != null ? evo5y * 100 : commune?.evolutionPrix5ans ?? null;
-  const evo3yValue =
-    evo3y != null ? evo3y * 100 : commune?.evolutionPrix3ans ?? null;
-  const evo1yApt =
-    aptDelta != null ? aptDelta * 100 : commune?.evolutionPrix1an ?? null;
-  const evo1yHouse =
-    houseDelta != null ? houseDelta * 100 : commune?.evolutionPrix1an ?? null;
-  const trxValue = trx ?? commune?.volumeTransactions12m ?? null;
-  const saleDurationValue = saleDuration ?? commune?.delaiMoyenVente ?? null;
-  const salesVolumeValue =
-    salesVolume ??
-    (commune
-      ? commune.volumeTransactions12m * commune.prixMoyenM2 * 55
-      : null);
-  const listingsCountValue = listingsCount;
-  const listingsMedValue = listingsMedM2;
-  const splitApt =
-    split != null
-      ? Math.round(split.apartment * 100)
-      : commune?.repartitionTypes.appartement ?? null;
-  const splitHouse =
-    split != null
-      ? Math.round(split.house * 100)
-      : commune?.repartitionTypes.maison ?? null;
+  const pick = <T,>(apiVal: T | null, mockVal: T | null | undefined): { value: T | null; source: DataSource | null } => {
+    if (apiVal != null) return { value: apiVal, source: "api" };
+    if (mockVal != null) return { value: mockVal, source: "mock" };
+    return { value: null, source: null };
+  };
+
+  const aptPick = pick(apt, commune?.prixMedianM2.appartement);
+  const housePick = pick(house, commune?.prixMedianM2.maison);
+  const meanPick = pick(mean, commune?.prixMoyenM2);
+  const rangeMinPick = pick(range?.[0] ?? null, commune?.prixMinM2);
+  const rangeMaxPick = pick(range?.[1] ?? null, commune?.prixMaxM2);
+  const evo5yPick = pick(
+    evo5y != null ? evo5y * 100 : null,
+    commune?.evolutionPrix5ans,
+  );
+  const evo3yPick = pick(
+    evo3y != null ? evo3y * 100 : null,
+    commune?.evolutionPrix3ans,
+  );
+  const evo1yAptPick = pick(
+    aptDelta != null ? aptDelta * 100 : null,
+    commune?.evolutionPrix1an,
+  );
+  const evo1yHousePick = pick(
+    houseDelta != null ? houseDelta * 100 : null,
+    commune?.evolutionPrix1an,
+  );
+  const trxPick = pick(trx, commune?.volumeTransactions12m);
+  const saleDurationPick = pick(saleDuration, commune?.delaiMoyenVente);
+  const salesVolumePick = pick(
+    salesVolume,
+    commune ? commune.volumeTransactions12m * commune.prixMoyenM2 * 55 : null,
+  );
+  const listingsCountPick = pick(listingsCount, null);
+  const listingsMedPick = pick(listingsMedM2, null);
+  const splitAptPick = pick(
+    split != null ? Math.round(split.apartment * 100) : null,
+    commune?.repartitionTypes.appartement,
+  );
+  const splitHousePick = pick(
+    split != null ? Math.round(split.house * 100) : null,
+    commune?.repartitionTypes.maison,
+  );
+
+  const aptValue = aptPick.value;
+  const houseValue = housePick.value;
+  const meanValue = meanPick.value;
+  const rangeMin = rangeMinPick.value;
+  const rangeMax = rangeMaxPick.value;
+  const evo5yValue = evo5yPick.value;
+  const evo3yValue = evo3yPick.value;
+  const evo1yApt = evo1yAptPick.value;
+  const evo1yHouse = evo1yHousePick.value;
+  const trxValue = trxPick.value;
+  const saleDurationValue = saleDurationPick.value;
+  const salesVolumeValue = salesVolumePick.value;
+  const listingsCountValue = listingsCountPick.value;
+  const listingsMedValue = listingsMedPick.value;
+  const splitApt = splitAptPick.value;
+  const splitHouse = splitHousePick.value;
 
   const ecartDept = useMemo(() => {
     if (!commune || aptValue == null) return null;
@@ -122,6 +153,7 @@ export function ApercuTab({ location }: { location: ActiveLocation }) {
             hint="par m²"
             icon={Building03Icon}
             delta={evo1yApt != null ? { value: evo1yApt, suffix: "1 an" } : undefined}
+            source={aptPick.source ?? undefined}
           />
           <Kpi
             label="Médian maison"
@@ -129,6 +161,7 @@ export function ApercuTab({ location }: { location: ActiveLocation }) {
             hint="par m²"
             icon={House01Icon}
             delta={evo1yHouse != null ? { value: evo1yHouse, suffix: "1 an" } : undefined}
+            source={housePick.source ?? undefined}
           />
           <Kpi
             label="Prix moyen"
@@ -139,6 +172,7 @@ export function ApercuTab({ location }: { location: ActiveLocation }) {
                 : undefined
             }
             icon={ChartLineData01Icon}
+            source={meanPick.source ?? undefined}
           />
           <Kpi
             label="Évolution"
@@ -166,14 +200,16 @@ export function ApercuTab({ location }: { location: ActiveLocation }) {
             tone={
               (evo5yValue ?? evo3yValue ?? 0) > 0 ? "positive" : "negative"
             }
+            source={(evo5yPick.source ?? evo3yPick.source) ?? undefined}
           />
         </div>
 
         {commune && ecartDept != null && ecartRegion != null && (
           <Card className="mt-3 border-0 ring-1 ring-inset ring-border shadow-none">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 Positionnement géographique
+                <SourceBadge source="mock" className="ml-auto" />
               </CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4 text-sm">
@@ -204,18 +240,21 @@ export function ApercuTab({ location }: { location: ActiveLocation }) {
                 ? { value: commune.evolutionVolume }
                 : undefined
             }
+            source={trxPick.source ?? undefined}
           />
           <Kpi
             label="Délai moyen vente"
             value={saleDurationValue != null ? `${Math.round(saleDurationValue)} j` : "—"}
             hint="médiane"
             icon={Calendar03Icon}
+            source={saleDurationPick.source ?? undefined}
           />
           <Kpi
             label="Volume €"
             value={salesVolumeValue != null ? formatEURCompact(salesVolumeValue) : "—"}
             hint="12 mois"
             icon={Money01Icon}
+            source={salesVolumePick.source ?? undefined}
           />
         </div>
       </section>
@@ -227,18 +266,21 @@ export function ApercuTab({ location }: { location: ActiveLocation }) {
             label="Annonces"
             value={listingsCountValue != null ? formatNumber(listingsCountValue) : "—"}
             icon={Tag01Icon}
+            source={listingsCountPick.source ?? undefined}
           />
           <Kpi
             label="Prix médian"
             value={listingsMedValue != null ? formatM2(listingsMedValue) : "—"}
             hint="annonces actives"
             icon={Money01Icon}
+            source={listingsMedPick.source ?? undefined}
           />
           <Kpi
             label="Répartition"
             value={splitApt != null ? `${splitApt}%` : "—"}
             hint={splitHouse != null ? `appart · ${splitHouse}% maison` : undefined}
             icon={Building03Icon}
+            source={splitAptPick.source ?? undefined}
           />
         </div>
         {meanValue != null && (
@@ -251,7 +293,10 @@ export function ApercuTab({ location }: { location: ActiveLocation }) {
 
       {commune && (
         <section>
-          <SectionTitle>Score énergétique</SectionTitle>
+          <SectionTitle>
+            Score énergétique
+            <SourceBadge source="mock" className="ml-auto" />
+          </SectionTitle>
           <Card className="border-0 ring-1 ring-inset ring-border shadow-none">
             <CardContent className="space-y-3 p-4">
               <div className="flex items-center justify-between">

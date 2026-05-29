@@ -41,6 +41,7 @@ import {
   type PropertyType,
 } from "@/lib/api";
 import type { DpeClass } from "@/lib/types";
+import { SourceBadge } from "@/components/common/source-badge";
 
 const FALLBACK_PHOTOS = [
   "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1200&q=70",
@@ -120,6 +121,7 @@ function ApiDetail({ item }: { item: ListingItem }) {
                     {item.source}
                   </>
                 )}
+                <SourceBadge source="api" />
               </div>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">
                 {item.title}
@@ -183,22 +185,25 @@ function ApiDetail({ item }: { item: ListingItem }) {
           </section>
 
           <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            <Kpi label="Prix" value={prix != null ? formatEUR(prix) : "—"} icon={Money01Icon} />
+            <Kpi label="Prix" value={prix != null ? formatEUR(prix) : "—"} icon={Money01Icon} source="api" />
             <Kpi
               label="Surface"
               value={surface != null ? formatSurface(surface) : "—"}
               icon={Maximize01Icon}
+              source="api"
             />
             <Kpi
               label="Pièces"
               value={item.rooms != null ? String(item.rooms) : "—"}
               icon={BedIcon}
               hint={item.bedrooms != null ? `${item.bedrooms} ch.` : undefined}
+              source="api"
             />
             <Kpi
               label="Prix au m²"
               value={prixM2 != null ? formatM2(prixM2) : "—"}
               icon={ChartLineData01Icon}
+              source="api"
             />
             <Card className="ring-1 ring-inset ring-border border-0 shadow-none">
               <CardContent className="flex items-center justify-between gap-3 p-4">
@@ -297,7 +302,7 @@ function MockDetail({ id }: { id: string }) {
                 <span>·</span>
                 <HugeiconsIcon icon={Location04Icon} size={13} />
                 {commune.nom}
-                <Badge variant="outline" className="ml-1 text-[10px]">Démo</Badge>
+                <SourceBadge source="mock" />
               </div>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">
                 {annonce.titre}
@@ -343,13 +348,14 @@ function MockDetail({ id }: { id: string }) {
           </section>
 
           <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            <Kpi label="Prix" value={formatEUR(annonce.prix)} icon={Money01Icon} />
-            <Kpi label="Surface" value={formatSurface(annonce.surface)} icon={Maximize01Icon} />
-            <Kpi label="Pièces" value={annonce.pieces} icon={BedIcon} />
+            <Kpi label="Prix" value={formatEUR(annonce.prix)} icon={Money01Icon} source="mock" />
+            <Kpi label="Surface" value={formatSurface(annonce.surface)} icon={Maximize01Icon} source="mock" />
+            <Kpi label="Pièces" value={annonce.pieces} icon={BedIcon} source="mock" />
             <Kpi
               label="Prix au m²"
               value={formatM2(annonce.prixM2)}
               icon={ChartLineData01Icon}
+              source="mock"
             />
             <Card className="ring-1 ring-inset ring-border border-0 shadow-none">
               <CardContent className="flex items-center justify-between gap-3 p-4">
@@ -369,8 +375,9 @@ function MockDetail({ id }: { id: string }) {
           <section className="mt-8 grid gap-6 lg:grid-cols-3">
             <Card className="lg:col-span-2 border-0 ring-1 ring-inset ring-border shadow-none">
               <CardHeader>
-                <CardTitle className="text-base font-semibold">
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
                   Positionnement marché
+                  <SourceBadge source="mock" className="ml-auto" />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-5">
@@ -405,7 +412,10 @@ function MockDetail({ id }: { id: string }) {
 
             <Card className="border-0 ring-1 ring-inset ring-border shadow-none">
               <CardHeader>
-                <CardTitle className="text-base font-semibold">Description</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                  Description
+                  <SourceBadge source="mock" className="ml-auto" />
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm text-muted-foreground">
                 <p>{annonce.description}</p>
@@ -427,8 +437,9 @@ function MockDetail({ id }: { id: string }) {
           <section className="mt-6 grid gap-6 lg:grid-cols-3">
             <Card className="lg:col-span-2 border-0 ring-1 ring-inset ring-border shadow-none">
               <CardHeader className="flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-base font-semibold">
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
                   Évolution du prix médian / m² · {commune.nom}
+                  <SourceBadge source="api" />
                 </CardTitle>
                 <span className="text-xs text-muted-foreground">3 ans</span>
               </CardHeader>
@@ -442,6 +453,7 @@ function MockDetail({ id }: { id: string }) {
                 <CardTitle className="flex items-center gap-2 text-base font-semibold">
                   <HugeiconsIcon icon={ChartHistogramIcon} size={16} />
                   Marché local
+                  <SourceBadge source="mock" className="ml-auto" />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">

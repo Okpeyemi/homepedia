@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import { cn } from "@/lib/utils";
+import { SourceBadge, type DataSource } from "@/components/common/source-badge";
 
 export function Kpi({
   label,
@@ -10,6 +11,7 @@ export function Kpi({
   delta,
   tone = "neutral",
   className,
+  source,
 }: {
   label: string;
   value: React.ReactNode;
@@ -18,6 +20,7 @@ export function Kpi({
   delta?: { value: number; suffix?: string };
   tone?: "neutral" | "positive" | "negative";
   className?: string;
+  source?: DataSource;
 }) {
   const deltaTone =
     delta == null
@@ -38,8 +41,9 @@ export function Kpi({
     <Card className={cn("ring-1 ring-inset border-0 shadow-none", ring, className)}>
       <CardContent className="flex items-start justify-between gap-3 p-4">
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
-            {label}
+          <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+            <span className="truncate">{label}</span>
+            {source && <SourceBadge source={source} />}
           </p>
           <div className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight">
             {value}

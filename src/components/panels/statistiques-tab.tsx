@@ -30,6 +30,7 @@ import type { ActiveLocation } from "@/lib/location";
 import { api } from "@/lib/api";
 import { useAsync } from "@/lib/use-api";
 import { EmptyState } from "@/components/common/empty-state";
+import { SourceBadge, type DataSource } from "@/components/common/source-badge";
 
 const MOIS_FR = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
 
@@ -62,8 +63,8 @@ export function StatistiquesTab({ location }: { location: ActiveLocation }) {
 
   const series = useMemo(() => {
     const ts = stats.data?.series.find((s) => s.key === "price_per_m2_timeseries");
-    if (!ts) return [];
-    return ts.points.slice(-60).map((p) => ({
+    const points = ts?.points ?? [];
+    return points.slice(-60).map((p) => ({
       date: String(p.t ?? ""),
       appartement: typeof p.apartment === "number" ? p.apartment : null,
       maison: typeof p.house === "number" ? p.house : null,
@@ -72,8 +73,8 @@ export function StatistiquesTab({ location }: { location: ActiveLocation }) {
 
   const saison = useMemo(() => {
     const s = stats.data?.series.find((x) => x.key === "seasonality");
-    if (!s) return [];
-    return s.points
+    const points = s?.points ?? [];
+    return points
       .map((p) => ({
         mois: typeof p.month === "number" ? MOIS_FR[(p.month - 1) % 12] : String(p.month ?? ""),
         count: typeof p.count === "number" ? p.count : 0,
@@ -86,8 +87,8 @@ export function StatistiquesTab({ location }: { location: ActiveLocation }) {
 
   const trimestres = useMemo(() => {
     const s = stats.data?.series.find((x) => x.key === "quarterly_median");
-    if (!s) return [];
-    return s.points.map((p) => ({
+    const points = s?.points ?? [];
+    return points.map((p) => ({
       trimestre: String(p.quarter ?? ""),
       prixMedian: typeof p.value === "number" ? p.value : 0,
     }));
@@ -95,8 +96,9 @@ export function StatistiquesTab({ location }: { location: ActiveLocation }) {
 
   const apiDistrib = useMemo(() => {
     const s = stats.data?.series.find((x) => x.key === "price_distribution");
-    if (!s || !s.points.length) return null;
-    return s.points.map((p) => ({
+    const points = s?.points;
+    if (!points || points.length === 0) return null;
+    return points.map((p) => ({
       tranche: String(p.bucket ?? p.label ?? ""),
       count: typeof p.count === "number" ? p.count : 0,
     }));
@@ -104,8 +106,9 @@ export function StatistiquesTab({ location }: { location: ActiveLocation }) {
 
   const apiTypo = useMemo(() => {
     const s = stats.data?.series.find((x) => x.key === "typology_breakdown");
-    if (!s || !s.points.length) return null;
-    return s.points.map((p) => ({
+    const points = s?.points;
+    if (!points || points.length === 0) return null;
+    return points.map((p) => ({
       type: String(p.type ?? p.label ?? ""),
       count: typeof p.count === "number" ? p.count : 0,
       surfaceMediane:
@@ -114,7 +117,20 @@ export function StatistiquesTab({ location }: { location: ActiveLocation }) {
   }, [stats.data]);
 
   const distrib = apiDistrib ?? (location.mock ? distributionPrix(location.mock) : []);
+  const distribSource: DataSource | null = apiDistrib
+    ? "api"
+    : location.mock
+      ? "mock"
+      : null;
   const pieces = apiTypo ?? (location.mock ? repartitionPieces(location.mock) : []);
+  const piecesSource: DataSource | null = apiTypo
+    ? "api"
+    : location.mock
+      ? "mock"
+      : null;
+  const tsSource: DataSource | null = series.length > 0 ? "api" : null;
+  const saisonSource: DataSource | null = saison.length > 0 ? "api" : null;
+  const trimestresSource: DataSource | null = trimestres.length > 0 ? "api" : null;
 
   if (stats.error && !location.mock) {
     return (
@@ -134,6 +150,7 @@ export function StatistiquesTab({ location }: { location: ActiveLocation }) {
             ? `Variation annuelle ${formatPct(evo1y * 100)}`
             : undefined
         }
+        source={tsSource}
       >
         {series.length === 0 ? (
           <EmptyAxis />
@@ -207,7 +224,7 @@ export function StatistiquesTab({ location }: { location: ActiveLocation }) {
         <Block
           title="Distribution des prix"
           icon={ChartHistogramIcon}
-          hint={apiDistrib ? undefined : "Démo"}
+          source={distribSource}
         >
           {distrib.length === 0 ? (
             <EmptyAxis />
@@ -247,7 +264,7 @@ export function StatistiquesTab({ location }: { location: ActiveLocation }) {
         <Block
           title="Surfaces & typologies"
           icon={ChartBarLineIcon}
-          hint={apiTypo ? undefined : "Démo"}
+          source={piecesSource}
         >
           {pieces.length === 0 ? (
             <EmptyAxis />
@@ -295,7 +312,7 @@ export function StatistiquesTab({ location }: { location: ActiveLocation }) {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Block title="Saisonnalité — volumes" icon={Calendar03Icon}>
+        <Block title="Saisonnalité — volumes" icon={Calendar03Icon} source={saisonSource}>
           {saison.length === 0 ? (
             <EmptyAxis />
           ) : (
@@ -331,7 +348,7 @@ export function StatistiquesTab({ location }: { location: ActiveLocation }) {
           )}
         </Block>
 
-        <Block title="Prix médian par trimestre" icon={ChartLineData01Icon}>
+        <Block title="Prix médian par trimestre" icon={ChartLineData01Icon} source={trimestresSource}>
           {trimestres.length === 0 ? (
             <EmptyAxis />
           ) : (
@@ -388,11 +405,13 @@ function Block({
   title,
   icon,
   hint,
+  source,
   children,
 }: {
   title: string;
   icon: Parameters<typeof HugeiconsIcon>[0]["icon"];
   hint?: string;
+  source?: DataSource | null;
   children: React.ReactNode;
 }) {
   return (
@@ -401,6 +420,7 @@ function Block({
         <CardTitle className="flex items-center gap-2 text-sm font-medium">
           <HugeiconsIcon icon={icon} size={15} className="text-muted-foreground" />
           {title}
+          {source && <SourceBadge source={source} />}
         </CardTitle>
         {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
       </CardHeader>

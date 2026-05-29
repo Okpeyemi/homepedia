@@ -22,6 +22,7 @@ import { formatEUR, formatNumber } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import type { ActiveLocation } from "@/lib/location";
 import { EmptyState } from "@/components/common/empty-state";
+import { SourceBadge } from "@/components/common/source-badge";
 
 export function QuartierTab({ location }: { location: ActiveLocation }) {
   const commune = location.mock;
@@ -38,6 +39,13 @@ export function QuartierTab({ location }: { location: ActiveLocation }) {
   }
   return (
     <div className="space-y-4 py-2">
+      <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
+        <SourceBadge source="mock" />
+        <span>
+          L&apos;API n&apos;expose pas encore qualité de vie, démographie et avis —
+          toutes les valeurs ci-dessous sont fictives.
+        </span>
+      </div>
       <section>
         <SectionTitle>Qualité de vie</SectionTitle>
         <div className="grid grid-cols-2 gap-3">
@@ -106,23 +114,27 @@ export function QuartierTab({ location }: { location: ActiveLocation }) {
             value={formatNumber(commune.population)}
             icon={UserGroup02Icon}
             delta={{ value: commune.populationEvol10ans, suffix: "10 ans" }}
+            source="mock"
           />
           <Kpi
             label="Taux chômage"
             value={`${commune.tauxChomage}%`}
             icon={WorkIcon}
+            source="mock"
           />
           <Kpi
             label="Revenu médian"
             value={formatEUR(commune.revenuMedian)}
             hint="par UC"
             icon={House01Icon}
+            source="mock"
           />
           <Kpi
             label="Propriétaires"
             value={`${commune.partProprietaires}%`}
             hint={`${commune.partResidencesPrincipales}% résid. princ.`}
             icon={House01Icon}
+            source="mock"
           />
         </div>
       </section>
