@@ -60,6 +60,7 @@ export function ApercuTab({ location }: { location: ActiveLocation }) {
 
   const pick = <T,>(apiVal: T | null, mockVal: T | null | undefined): { value: T | null; source: DataSource | null } => {
     if (apiVal != null) return { value: apiVal, source: "api" };
+    if (loading) return { value: mockVal ?? null, source: null };
     if (mockVal != null) return { value: mockVal, source: "mock" };
     return { value: null, source: null };
   };
