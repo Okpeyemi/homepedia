@@ -31,7 +31,6 @@ import {
   ToggleGroupItem,
 } from "@/components/ui/toggle-group";
 import { MapLegend } from "@/components/map/map-legend";
-import { SourceBadge } from "@/components/common/source-badge";
 import { ApercuTab } from "@/components/panels/apercu-tab";
 import { AnnoncesTab } from "@/components/panels/annonces-tab";
 import { StatistiquesTab } from "@/components/panels/statistiques-tab";
@@ -134,18 +133,11 @@ export function CarteShell() {
               <SelectContent>
                 {communes.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
-                    <span className="flex w-full items-center gap-2">
-                      <span className="truncate">
-                        {c.nom}{" "}
-                        <span className="text-muted-foreground">· {c.codePostal}</span>
-                      </span>
-                      <SourceBadge source="mock" className="ml-auto" />
-                    </span>
+                    {c.nom} <span className="text-muted-foreground">· {c.codePostal}</span>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <SourceBadge source={active.mock ? "mock" : "api"} />
           </div>
 
           <div className="pointer-events-auto rounded-xl border border-border bg-card/90 p-1 shadow-sm backdrop-blur">
@@ -175,10 +167,7 @@ export function CarteShell() {
         <div className="pointer-events-none absolute bottom-3 left-3 z-10 flex flex-col items-start gap-2 sm:bottom-4 sm:left-4">
           <MapLegend density={density} />
           <div className="pointer-events-auto rounded-xl border border-border bg-card/90 px-3 py-2 text-xs shadow-sm backdrop-blur">
-            <div className="flex items-center gap-2 font-semibold">
-              <span className="truncate">{active.label}</span>
-              <SourceBadge source={active.mock ? "mock" : "api"} className="ml-auto" />
-            </div>
+            <div className="font-semibold">{active.label}</div>
             <div className="mt-0.5 text-muted-foreground">
               {active.mock
                 ? `${active.mock.codePostal} · ${formatNumber(active.mock.population)} hab.`
@@ -205,9 +194,8 @@ export function CarteShell() {
       >
         <div className="flex items-center gap-2 border-b border-border px-4 py-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-sm font-semibold leading-tight">
-              <span className="truncate">{active.label}</span>
-              <SourceBadge source={active.mock ? "mock" : "api"} />
+            <div className="truncate text-sm font-semibold leading-tight">
+              {active.label}
             </div>
             <div className="truncate text-xs text-muted-foreground">{headerHint}</div>
           </div>
